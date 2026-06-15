@@ -1,26 +1,26 @@
-# RAG Knowledge Base - 依赖清单
-# 核心框架
+# RAG Knowledge Base - Dependencies
+# Core framework
 llama-index==0.12.0
 llama-index-core==0.12.0
 llama-index-llms-deepseek==0.1.0
 llama-index-embeddings-huggingface==0.4.0
 
-# 向量数据库
+# Vector database
 chromadb==0.5.0
 
-# 文档解析
+# Document parsing
 pypdf==4.0.0
 python-docx==1.1.0
 unstructured==0.15.0
 
-# Web 界面
+# Web UI
 streamlit==1.38.0
 
-# 后端 API
+# Backend API
 fastapi==0.115.0
 uvicorn==0.30.0
 
-# 工具
+# Utils
 python-dotenv==1.0.0
 pydantic==2.9.0
 numpy==1.26.0

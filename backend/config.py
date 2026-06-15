@@ -11,6 +11,10 @@ from dotenv import load_dotenv
 # 加载 .env 文件
 load_dotenv()
 
+# HuggingFace 镜像（国内网络优化）
+HF_ENDPOINT = os.getenv("HF_ENDPOINT", "https://hf-mirror.com")
+os.environ["HF_ENDPOINT"] = HF_ENDPOINT
+
 # 项目根目录
 BASE_DIR = Path(__file__).parent.parent
 

@@ -8,7 +8,7 @@ import os
 from pathlib import Path
 from typing import List, Optional
 
-from llama_index.core import Document, VectorStoreIndex, Settings
+from llama_index.core import Document, VectorStoreIndex, Settings, StorageContext
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.vector_stores.chroma import ChromaVectorStore
@@ -141,10 +141,11 @@ def ingest_document(
     Settings.embed_model = embed_model
     Settings.node_parser = node_parser
 
-    # 5. 创建索引（自动分块和向量化）
+    # 5. 创建 StorageContext 和索引
+    storage_context = StorageContext.from_defaults(vector_store=vector_store)
     index = VectorStoreIndex.from_documents(
         documents,
-        vector_store=vector_store,
+        storage_context=storage_context,
         show_progress=True,
     )
 
