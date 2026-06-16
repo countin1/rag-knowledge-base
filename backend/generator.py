@@ -9,7 +9,7 @@ from typing import List, Optional
 from llama_index.core import Settings
 from llama_index.llms.deepseek import DeepSeek
 
-from .config import LLM_API_KEY, LLM_MODEL, LLM_BASE_URL
+from .config import LLM_API_KEY, LLM_MODEL, LLM_BASE_URL, validate_config
 from .retriever import Retriever, format_context
 
 
@@ -35,6 +35,7 @@ class Generator:
         Args:
             retriever: 检索器实例
         """
+        validate_config()
         self.retriever = retriever or Retriever()
         self._llm = None
 
