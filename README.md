@@ -122,6 +122,18 @@ rag-knowledge-base/
 - [ ] Agent 功能（工具调用）
 - [ ] 知识图谱集成
 
+## ☁️ 部署到 Streamlit Cloud
+
+1. 将代码推送到 GitHub 仓库
+2. 去 [share.streamlit.io](https://share.streamlit.io) 连接仓库并部署
+3. 在 App settings -> Secrets 中添加：
+
+```toml
+DEEPSEEK_API_KEY = "your-deepseek-key"
+```
+
+Streamlit Cloud 会自动将 Secrets 中的键暴露为环境变量。
+
 ## 📄 License
 
 MIT
