@@ -52,3 +52,6 @@ data/chroma_db/
 
 # Streamlit
 .streamlit/
+
+# Pytest
+.pytest_cache/

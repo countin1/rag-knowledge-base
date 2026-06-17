@@ -51,3 +51,7 @@ SIMILARITY_THRESHOLD = float(os.getenv("SIMILARITY_THRESHOLD", "0.3"))
 
 # 对话配置
 MAX_HISTORY = int(os.getenv("MAX_HISTORY", "10"))
+
+# LLM 生成参数
+LLM_MAX_TOKENS = int(os.getenv("LLM_MAX_TOKENS", "2048"))
+LLM_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.3"))

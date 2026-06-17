@@ -96,7 +96,7 @@ def _parse_pdf(file_path: str) -> List[Document]:
 
 def _parse_text(file_path: str) -> List[Document]:
     """解析纯文本/Markdown"""
-    with open(file_path, "r", encoding="utf-8") as f:
+    with open(file_path, "r", encoding="utf-8", errors="replace") as f:
         text = f.read()
 
     return [

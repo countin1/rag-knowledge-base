@@ -9,11 +9,11 @@ import os
 import uuid
 from pathlib import Path
 
-from backend.ingest import ingest_document, get_index
+from backend.ingest import ingest_document
 from backend.retriever import Retriever
 from backend.generator import Generator
 from backend.memory import session_manager
-from backend.config import CHROMA_PERSIST_DIR
+from backend.config import CHROMA_PERSIST_DIR, BASE_DIR
 
 # 页面配置
 st.set_page_config(
@@ -160,10 +160,11 @@ def document_tab():
             for i, file in enumerate(uploaded_files):
                 status.write(f"处理: {file.name}")
 
-                # 保存临时文件
-                temp_dir = Path("data/raw")
+                # 保存临时文件（清理文件名防止路径遍历）
+                temp_dir = Path(BASE_DIR) / "data" / "raw"
                 temp_dir.mkdir(parents=True, exist_ok=True)
-                temp_path = temp_dir / file.name
+                safe_name = Path(file.name).name  # 去掉目录部分
+                temp_path = temp_dir / safe_name
 
                 with open(temp_path, "wb") as f:
                     f.write(file.getvalue())
@@ -182,7 +183,7 @@ def document_tab():
 
     # 已上传文档列表
     st.subheader("已上传文档")
-    raw_dir = Path("data/raw")
+    raw_dir = Path(BASE_DIR) / "data" / "raw"
     if raw_dir.exists():
         files = list(raw_dir.glob("*"))
         if files:

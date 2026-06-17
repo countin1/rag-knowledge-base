@@ -6,6 +6,7 @@ import pytest
 import tempfile
 import os
 from pathlib import Path
+from unittest.mock import Mock
 
 from backend.ingest import ingest_document
 from backend.retriever import Retriever

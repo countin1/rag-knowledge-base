@@ -9,7 +9,7 @@ from typing import List, Optional
 from llama_index.core import Settings
 from llama_index.llms.deepseek import DeepSeek
 
-from .config import LLM_API_KEY, LLM_MODEL, LLM_BASE_URL, validate_config
+from .config import LLM_API_KEY, LLM_MODEL, LLM_BASE_URL, LLM_MAX_TOKENS, LLM_TEMPERATURE, validate_config
 from .retriever import Retriever, format_context
 
 
@@ -35,7 +35,6 @@ class Generator:
         Args:
             retriever: 检索器实例
         """
-        validate_config()
         self.retriever = retriever or Retriever()
         self._llm = None
 
@@ -43,12 +42,13 @@ class Generator:
     def llm(self) -> DeepSeek:
         """懒加载 LLM"""
         if self._llm is None:
+            validate_config()
             self._llm = DeepSeek(
                 model=LLM_MODEL,
                 api_key=LLM_API_KEY,
                 api_base=LLM_BASE_URL,
-                temperature=0.3,
-                max_tokens=2048,
+                temperature=LLM_TEMPERATURE,
+                max_tokens=LLM_MAX_TOKENS,
             )
         return self._llm
 
