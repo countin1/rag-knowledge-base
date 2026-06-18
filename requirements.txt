@@ -16,6 +16,9 @@ unstructured==0.15.0
 # Web UI
 streamlit==1.38.0
 
+# LLM API (for Agent Function Calling)
+openai>=1.0.0
+
 # Utils
 python-dotenv==1.0.0
 pydantic==2.9.0

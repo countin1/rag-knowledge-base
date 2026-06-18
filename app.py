@@ -4,6 +4,7 @@ RAG Knowledge Base - Streamlit 主界面
 企业知识库问答系统
 """
 
+import json
 import streamlit as st
 import os
 import uuid
@@ -12,6 +13,7 @@ from pathlib import Path
 from backend.ingest import ingest_document
 from backend.retriever import Retriever
 from backend.generator import Generator
+from backend.agent import Agent
 from backend.memory import session_manager
 from backend.config import CHROMA_PERSIST_DIR, BASE_DIR
 
@@ -29,8 +31,14 @@ if "session_id" not in st.session_state:
 if "generator" not in st.session_state:
     st.session_state.generator = Generator()
 
+if "agent" not in st.session_state:
+    st.session_state.agent = Agent()
+
 if "show_sources" not in st.session_state:
     st.session_state.show_sources = True
+
+if "agent_mode" not in st.session_state:
+    st.session_state.agent_mode = False
 
 
 def main():
@@ -100,13 +108,33 @@ def chat_tab():
     """对话标签页"""
     memory = session_manager.get_session(st.session_state.session_id)
 
+    # Agent 模式开关
+    col1, col2 = st.columns([1, 4])
+    with col1:
+        agent_mode = st.toggle("🤖 Agent 模式", value=st.session_state.agent_mode)
+        st.session_state.agent_mode = agent_mode
+
+    with col2:
+        if agent_mode:
+            st.caption("Agent 模式：支持多步任务，可检索、总结、生成报告")
+        else:
+            st.caption("普通模式：基于知识库问答")
+
+    st.divider()
+
     # 显示对话历史
     for msg in memory.get_history():
         with st.chat_message(msg["role"]):
             st.write(msg["content"])
 
+            # 显示 Agent 工具调用记录（如果有）
+            if "tool_calls" in msg and msg["tool_calls"]:
+                with st.expander("🔧 工具调用记录"):
+                    for tc in msg["tool_calls"]:
+                        st.code(f"{tc['name']}({json.dumps(tc['arguments'], ensure_ascii=False)})", language="python")
+
     # 用户输入
-    if query := st.chat_input("请输入您的问题..."):
+    if query := st.chat_input("请输入您的问题或任务..."):
         # 显示用户消息
         with st.chat_message("user"):
             st.write(query)
@@ -116,28 +144,59 @@ def chat_tab():
 
         # 生成答案
         with st.chat_message("assistant"):
-            with st.spinner("正在检索和生成答案..."):
-                result = st.session_state.generator.generate(
-                    query=query,
-                    chat_history=memory.get_recent(3),
-                )
+            if agent_mode:
+                # Agent 模式
+                with st.spinner("Agent 正在执行任务..."):
+                    result = st.session_state.agent.run(
+                        query=query,
+                        chat_history=memory.get_recent(3),
+                    )
 
-            # 显示答案
-            st.write(result["answer"])
+                # 显示答案
+                st.write(result["answer"])
 
-            # 显示来源
-            if st.session_state.show_sources and result["sources"]:
-                with st.expander("📎 引用来源"):
-                    for i, source in enumerate(result["sources"], 1):
-                        st.markdown(f"""
-                        **[{i}] {source['source']}**
-                        - 页码: {source['page'] or 'N/A'}
-                        - 相似度: {source['score']:.2f}
-                        - 片段: {source['snippet']}
-                        """)
+                # 显示思考过程
+                if result["thoughts"]:
+                    with st.expander("💭 思考过程"):
+                        for thought in result["thoughts"]:
+                            st.info(thought)
 
-        # 添加到历史
-        memory.add_assistant_message(result["answer"])
+                # 显示工具调用
+                if result["tool_calls"]:
+                    with st.expander("🔧 工具调用记录"):
+                        for tc in result["tool_calls"]:
+                            st.code(f"{tc['name']}({json.dumps(tc['arguments'], ensure_ascii=False)})", language="python")
+
+                # 添加到历史（包含工具调用记录）
+                memory.add_assistant_message(result["answer"])
+                # 保存工具调用记录到历史
+                if result["tool_calls"]:
+                    memory._history[-1]["tool_calls"] = result["tool_calls"]
+
+            else:
+                # 普通模式
+                with st.spinner("正在检索和生成答案..."):
+                    result = st.session_state.generator.generate(
+                        query=query,
+                        chat_history=memory.get_recent(3),
+                    )
+
+                # 显示答案
+                st.write(result["answer"])
+
+                # 显示来源
+                if st.session_state.show_sources and result["sources"]:
+                    with st.expander("📎 引用来源"):
+                        for i, source in enumerate(result["sources"], 1):
+                            st.markdown(f"""
+                            **[{i}] {source['source']}**
+                            - 页码: {source['page'] or 'N/A'}
+                            - 相似度: {source['score']:.2f}
+                            - 片段: {source['snippet']}
+                            """)
+
+                # 添加到历史
+                memory.add_assistant_message(result["answer"])
 
 
 def document_tab():
