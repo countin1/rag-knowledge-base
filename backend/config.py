@@ -2,14 +2,24 @@
 配置管理
 
 集中管理所有配置项，支持环境变量和 .env 文件。
+优先使用根目录统一配置，兼容项目本地配置。
 """
 
 import os
+import sys
 from pathlib import Path
 from dotenv import load_dotenv
 
-# 加载 .env 文件
+# 加载项目本地 .env（兼容）
 load_dotenv()
+
+# 加载根目录统一配置
+_ROOT_DIR = Path(__file__).parent.parent.parent
+_SHARED_DIR = _ROOT_DIR / "shared"
+if _SHARED_DIR.exists():
+    load_dotenv(_ROOT_DIR / ".env")
+    # 将 shared 目录加入 path
+    sys.path.insert(0, str(_ROOT_DIR))
 
 # HuggingFace 镜像（国内网络优化）
 HF_ENDPOINT = os.getenv("HF_ENDPOINT", "https://hf-mirror.com")
@@ -18,11 +28,11 @@ os.environ["HF_ENDPOINT"] = HF_ENDPOINT
 # 项目根目录
 BASE_DIR = Path(__file__).parent.parent
 
-# LLM 配置
+# LLM 配置（优先统一配置，兼容旧配置）
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "deepseek")
-LLM_MODEL = os.getenv("LLM_MODEL", "deepseek-chat")
-LLM_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
-LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://api.deepseek.com")
+LLM_MODEL = os.getenv("AI_MODEL", os.getenv("LLM_MODEL", "deepseek-chat"))
+LLM_API_KEY = os.getenv("AI_API_KEY", os.getenv("DEEPSEEK_API_KEY", ""))
+LLM_BASE_URL = os.getenv("AI_BASE_URL", os.getenv("LLM_BASE_URL", "https://api.deepseek.com"))
 
 
 def validate_config():
